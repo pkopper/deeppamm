@@ -9,6 +9,7 @@ License: MIT
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
-Imports: stats, Formula, reticulate, R6, checkmate, dplyr, keras, mgcv, pammtools, purrr,
-    stringi, stringr, survival, tensorflow, msm
+Depends: dplyr, keras, tensorflow
+Imports: stats, Formula, reticulate, R6, checkmate, mgcv, pammtools, purrr,
+    stringi, stringr, survival, msm
 Suggests: pec, testthat
