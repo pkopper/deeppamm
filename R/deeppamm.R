@@ -16,7 +16,7 @@
 #' package.
 #' @import stats Formula reticulate pammtools mgcv keras tensorflow dplyr stringr stringi purrr R6 checkmate survival
 #' @export
-deeppamm <- R6Class(
+deeppamm <- R6::R6Class(
   "deeppamm",
   public = list(
     model = NULL,

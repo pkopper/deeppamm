@@ -1,4 +1,4 @@
-#' @import stats
+#' @import stats stringr stringi
 decompose_formula <- function(formulas, colnamesX) {
   res <- vector("list", length(formulas))
   for (i in 1:length(formulas)) {
@@ -41,6 +41,7 @@ scale_ <- function(scaler, data) {
   data
 }
 
+#' @import keras tensorflow
 s_layer <- function(x, P, lambda_factor, trainable = TRUE, pretrained_weights = NULL) {
   P = P * lambda_factor
   if (is.null(pretrained_weights)) {
@@ -91,7 +92,7 @@ smart_append <- function(structured, deep = NULL, unstructured = NULL) {
     append(append(structured, deep), unstructured)
   }
 }
-
+#' @import dplyr
 recompute_intlen <- function(data) {
   lagged_times <- as.numeric(dplyr::lag(data$times))
   lagged_times[1] <- 0
