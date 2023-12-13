@@ -1,0 +1,13 @@
+Package: deeppamm
+Type: Package
+Title: DeepPAMM: Deep Piecewise Exponential Additive Mixed Models
+Version: 0.1.2
+Author: Philipp Kopper
+Maintainer: Philipp Kopper <kopper@stat.uni-muenchen.de>
+Description: This is the software implementation of Kopper et al. (2022); https://arxiv.org/abs/2202.07423
+License: MIT
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+Imports: Formula, reticulate, R6, checkmate, dplyr, keras, mgcv, pammtools, purrr,
+    stats, stringi, stringr, survival, tensorflow, testthat, pec, msm
