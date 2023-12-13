@@ -286,7 +286,7 @@ deeppamm <- R6::R6Class(
       }
       self$ped <- TRUE
     },
-    #' @import keras tensorflow dpylr
+    #' @import keras tensorflow dplyr
     make_net = function(deep_architectures, formulas, trainable_struct = TRUE, 
                         pretrain = FALSE, lambdas = NULL) {
       if (self$built) stop("Net already built.")
