@@ -606,3 +606,6 @@ deeppamm <- R6::R6Class(
   #  }
   )
 )
+
+#' @import dplyr
+`%>%` <- dplyr::`%>%`
