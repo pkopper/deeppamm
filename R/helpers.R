@@ -43,6 +43,7 @@ scale_ <- function(scaler, data) {
 
 #' @import keras tensorflow dplyr
 s_layer <- function(x, P, lambda_factor, trainable = TRUE, pretrained_weights = NULL) {
+  `%>%` <- dplyr::`%>%`
   P = P * lambda_factor
   if (is.null(pretrained_weights)) {
     x %>% layer_dense(1, use_bias = FALSE, trainable = trainable,
