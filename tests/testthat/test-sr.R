@@ -5,7 +5,7 @@ set.seed(18)
 n <- 600
 Te <- 90
 Tn <- 30
-data <- data.frame(x1 = runif(n, 0, 2), x2 = runif(n, 0, 2), x3 = runif(n, -1, 1))
+data <- data.frame(x1 = runif(n, 0, 2), x2 = runif(n, 0, 2), x3 = runif(n, -2, 1))
 f0 <- function(t) {
   dgamma(t, 8, 2) *6
 }
@@ -36,7 +36,7 @@ testthat::test_that("Single Risk", {
                            trafo_fct = Surv(time, status) ~.,
                            cut = c(0.1, 0.5, 1:30),
                            lr = 0.001,
-                           scale = FALSE)
+                           scale = TRUE)
   DEEPPAMM$make_model(make_params())
   DEEPPAMM$train(epochs = 1000, batch_size = 128, callbacks = list(
     callback_reduce_lr_on_plateau(min_lr = 0.0001, factor = 0.5, patience = 50L),

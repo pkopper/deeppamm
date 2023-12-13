@@ -34,7 +34,7 @@ decompose_formula <- function(formulas, colnamesX) {
 }
 
 scale_ <- function(scaler, data) {
-  for (i in 1:length(scaler)) {
+  for (i in 1:length(scaler[[1]])) {
     data[,names(scaler$means)[i]] <- 
       (data[,names(scaler$means)[i]] - scaler$means[[i]]) / scaler$sds[[i]]
   }
