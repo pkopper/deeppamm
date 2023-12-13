@@ -176,6 +176,7 @@ deeppamm <- R6::R6Class(
         self$make_net(self$deep_architectures, self$formulas, params$trainable_struct, params$pretrain, params$lambdas)
       }
     },
+    #' @import dplyr
     make_ped = function(data, formulas, trafo_fct, cut, cr, n_cr, multimodal, train = TRUE) {
       if (self$ped & train) stop("Train data already transformed to PED.")
       if (multimodal) {
@@ -285,6 +286,7 @@ deeppamm <- R6::R6Class(
       }
       self$ped <- TRUE
     },
+    #' @import keras tensorflow dpylr
     make_net = function(deep_architectures, formulas, trainable_struct = TRUE, 
                         pretrain = FALSE, lambdas = NULL) {
       if (self$built) stop("Net already built.")
@@ -491,6 +493,7 @@ deeppamm <- R6::R6Class(
     #' @param cause
     #' integer+, cause to predict cause-specific hazards for; in single risk case:
     #' 1L
+    #' @import dplyr
     predictStdHaz = function(new_data, intervals = NULL, cause = 1L) {
       assert_numeric(intervals, lower = 0)
       if (is.null(intervals)) intervals <- self$cut
@@ -606,6 +609,3 @@ deeppamm <- R6::R6Class(
   #  }
   )
 )
-
-#' @import dplyr
-`%>%` <- dplyr::`%>%`
