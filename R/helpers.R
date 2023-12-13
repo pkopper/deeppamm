@@ -41,7 +41,7 @@ scale_ <- function(scaler, data) {
   data
 }
 
-#' @import keras tensorflow
+#' @import keras tensorflow dplyr
 s_layer <- function(x, P, lambda_factor, trainable = TRUE, pretrained_weights = NULL) {
   P = P * lambda_factor
   if (is.null(pretrained_weights)) {
