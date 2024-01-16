@@ -48,6 +48,7 @@ deeppamm <- R6::R6Class(
     deep = TRUE,
     built = FALSE,
     ped = FALSE,
+    subnets = NULL,
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -238,8 +239,10 @@ deeppamm <- R6::R6Class(
         names(X[[i]]) <- c(unique(processed_terms_), unprocessed_terms)
         names(P[[i]]) <- unique(processed_terms_)
         for (j in 1:length(processed_terms_t)) {
-          X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
-          P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          if (length(processed_terms_t[[j]]) > 0) {
+            X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
+            P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          }
         }
         k = j
         for (j in 1:length(unprocessed_terms)) {
@@ -403,6 +406,10 @@ deeppamm <- R6::R6Class(
         self$multimodal <- FALSE
       }
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
+      self$subnets <- smart_append(
+        list(rep("structured", length(unlist(structured_input))),
+             rep("deep", length(unlist(deep_input))),
+             rep("unstructured", length(unstructured_input))))
       self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
                        tf$constant, dtype = self$precision)
       output <- list(structured, deep, unstructured) 
@@ -430,6 +437,22 @@ deeppamm <- R6::R6Class(
           callbacks = callbacks,
           validation_split = val_split,
           view_metrics = FALSE)
+    },
+    train_with_multiple_optimizers = function(
+    optimizers = list(structured = optimizer_adam(0.001),
+                      deep = optimizer_adam(0.01),
+                      unstructured = optimizer_adam(0.1)),
+    epochs = list(structured = 1000, 
+                  deep = 200, 
+                  unstructured = 50),
+    steps_each = list(structured = 20, 
+                      deep = 5, 
+                      unstructured = 1),
+    batch_size = 16L,
+    callbacks = NULL,
+    val_split = 0.1
+    ) {
+      
     },
     #' @description 
     #' Hazard Prediction
