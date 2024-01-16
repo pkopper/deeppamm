@@ -238,8 +238,10 @@ deeppamm <- R6::R6Class(
         names(X[[i]]) <- c(unique(processed_terms_), unprocessed_terms)
         names(P[[i]]) <- unique(processed_terms_)
         for (j in 1:length(processed_terms_t)) {
-          X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
-          P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          if (length(processed_terms_t[[j]]) > 0) {
+            X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
+            P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          }
         }
         k = j
         for (j in 1:length(unprocessed_terms)) {
@@ -533,7 +535,7 @@ deeppamm <- R6::R6Class(
         ungroup() %>%
         dplyr::filter(.data[["times"]] %in% env_times)
       stdhaz <- matrix(newdata$stdhaz, nrow = ni, 
-                     ncol = length(intervals), byrow = TRUE)
+                       ncol = length(intervals), byrow = TRUE)
       stdhaz
     },
     #' @description 
@@ -598,14 +600,14 @@ deeppamm <- R6::R6Class(
       lagged_os <- cbind(1, overall_survival[, 1:(ncol(overall_survival) - 1)])
       for (j in 1:self$n_cr) {
         CIFs[[j]] <- tf$cumsum(stdhaz[[j]] * lagged_os, axis = 1L)$numpy()
-        }
+      }
       
       CIFs
     }#, todo
     #plot_partial = function(which) {
-  #    if (which == "time") {
-  #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
-  #    }
-  #  }
+    #    if (which == "time") {
+    #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
+    #    }
+    #  }
   )
 )
