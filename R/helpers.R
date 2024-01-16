@@ -10,7 +10,7 @@ decompose_formula <- function(formulas, colnamesX) {
     te_ <- brack_terms[str_detect(brack_terms, stringr::fixed('te('))]
     structured <- c("1", s_, te_, unbrack_terms)
     sform <- paste(structured, collapse = "+")
-    sform <- paste0("Y ~ ", )
+    sform <- paste0("Y ~ ", sform)
     sformula <- as.formula(sform)
     u <- terms[!(terms %in% structured)]
     re <- "\\(([^()]+)\\)"
