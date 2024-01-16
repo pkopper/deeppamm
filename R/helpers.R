@@ -8,9 +8,10 @@ decompose_formula <- function(formulas, colnamesX) {
     unbrack_terms <- terms[!str_detect(terms, stringr::fixed('('))]
     s_ <- brack_terms[str_detect(brack_terms, stringr::fixed('s('))]
     te_ <- brack_terms[str_detect(brack_terms, stringr::fixed('te('))]
-    structured <- c(s_, te_, unbrack_terms)
-    sformula <- as.formula(paste0("Y ~ ", paste(structured, collapse = "+")))
-    
+    structured <- c("1", s_, te_, unbrack_terms)
+    sform <- paste(structured, collapse = "+")
+    sform <- paste0("Y ~ ", )
+    sformula <- as.formula(sform)
     u <- terms[!(terms %in% structured)]
     re <- "\\(([^()]+)\\)"
     uu <- vector("list", length(u))
