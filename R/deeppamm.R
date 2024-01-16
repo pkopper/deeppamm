@@ -238,7 +238,7 @@ deeppamm <- R6::R6Class(
         names(X[[i]]) <- c(unique(processed_terms_), unprocessed_terms)
         names(P[[i]]) <- unique(processed_terms_)
         for (j in 1:length(processed_terms_t)) {
-          if (length(processed_terms_t[[j]]) > 0) {
+          if (length(processed_terms_t) > 0) {
             X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
             P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
           }
