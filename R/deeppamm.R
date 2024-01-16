@@ -48,7 +48,6 @@ deeppamm <- R6::R6Class(
     deep = TRUE,
     built = FALSE,
     ped = FALSE,
-    subnets = NULL,
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -406,10 +405,6 @@ deeppamm <- R6::R6Class(
         self$multimodal <- FALSE
       }
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
-      self$subnets <- smart_append(
-        list(rep("structured", length(unlist(structured_input))),
-             rep("deep", length(unlist(deep_input))),
-             rep("unstructured", length(unstructured_input))))
       self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
                        tf$constant, dtype = self$precision)
       output <- list(structured, deep, unstructured) 
@@ -437,22 +432,6 @@ deeppamm <- R6::R6Class(
           callbacks = callbacks,
           validation_split = val_split,
           view_metrics = FALSE)
-    },
-    train_with_multiple_optimizers = function(
-    optimizers = list(structured = optimizer_adam(0.001),
-                      deep = optimizer_adam(0.01),
-                      unstructured = optimizer_adam(0.1)),
-    epochs = list(structured = 1000, 
-                  deep = 200, 
-                  unstructured = 50),
-    steps_each = list(structured = 20, 
-                      deep = 5, 
-                      unstructured = 1),
-    batch_size = 16L,
-    callbacks = NULL,
-    val_split = 0.1
-    ) {
-      
     },
     #' @description 
     #' Hazard Prediction
@@ -556,7 +535,7 @@ deeppamm <- R6::R6Class(
         ungroup() %>%
         dplyr::filter(.data[["times"]] %in% env_times)
       stdhaz <- matrix(newdata$stdhaz, nrow = ni, 
-                     ncol = length(intervals), byrow = TRUE)
+                       ncol = length(intervals), byrow = TRUE)
       stdhaz
     },
     #' @description 
@@ -621,14 +600,14 @@ deeppamm <- R6::R6Class(
       lagged_os <- cbind(1, overall_survival[, 1:(ncol(overall_survival) - 1)])
       for (j in 1:self$n_cr) {
         CIFs[[j]] <- tf$cumsum(stdhaz[[j]] * lagged_os, axis = 1L)$numpy()
-        }
+      }
       
       CIFs
     }#, todo
     #plot_partial = function(which) {
-  #    if (which == "time") {
-  #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
-  #    }
-  #  }
+    #    if (which == "time") {
+    #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
+    #    }
+    #  }
   )
 )
