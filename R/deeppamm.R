@@ -605,7 +605,7 @@ deeppamm <- R6::R6Class(
       }
       
       CIFs
-    }, 
+    }#, 
     #plot_partial = function(which, structured_only = FALSE) {
     #    if (which == "time") {
     #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
