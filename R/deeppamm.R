@@ -221,7 +221,7 @@ deeppamm <- R6::R6Class(
           mm <- cbind(mm, offset = ped_data[[i]]$offset)
           mm2 <- model.matrix(pam2)
         } else {
-          partial_ <- partial_covar | partial_effect
+          partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
           partial <- c(partial_covar, partial_effect)
           mm <- predict(self$related_pamm[[i]], ped_data[[i]], type = "lpmatrix")
           mm <- cbind(mm, offset = 0)
