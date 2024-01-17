@@ -319,8 +319,10 @@ deeppamm <- R6::R6Class(
                                    deep = formulas[[i]]$deep_vars)
         if (!train) {
           if (partial_) {
-            if (!is_structured) {
-              X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] <- X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] * 0
+            if (partial_type == "effect") {
+              if (!is_structured) {
+                X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] <- X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] * 0
+              }
             }
           }
         }

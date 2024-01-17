@@ -174,7 +174,7 @@ select_single_obs <- function(x) {
   }
 }
 
-get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured) {
+get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured = NULL) {
   if (partial_type == "covar") {
     return(partial)
   } else {
@@ -186,13 +186,15 @@ get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured
   }
 }
 
-get_partial_type <- function(partial, tabular_terms) {
+get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
   if (partial %in% names(tabular_terms$structured)) {
     return(TRUE) 
   } else if (partial %in% names(tabular_terms$deep)) {
     return(FALSE)
-  } else {
+  } else if (!covar) {
     stop("Effect does not exist.")
+  } else {
+    return(NULL)
   }
 }
 
