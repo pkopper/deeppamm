@@ -154,3 +154,23 @@ subset_mm <- function(data, frac = 0.8) {
   res
 }
 
+select_single_obs <- function(x) {
+  if (dim(x) == 2) {
+    x[1, , drop = FALSE]
+  } else if (dim(x) == 3) {
+    x[1, , , drop = FALSE]
+  } else if (dim(x) == 4) {
+    x[1, , , , drop = FALSE]
+  } else if (dim(x) == 5) {
+    x[1, , , , , drop = FALSE]
+  } else if (dim(x) == 6) {
+    x[1, , , , , , drop = FALSE]
+  } else if (dim(x) == 7) {
+    x[1, , , , , , , drop = FALSE]
+  } else if (dim(x) == 8) {
+    x[1, , , , , , , , drop = FALSE]
+  } else {
+    stop("Not implemented for dim > 8 or dim < 2.")
+  }
+}
+

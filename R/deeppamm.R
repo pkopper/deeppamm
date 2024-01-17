@@ -278,11 +278,6 @@ deeppamm <- R6::R6Class(
         self$processing_pam = pam2
       } else {
         no_deep <- !self$deep
-        #if (!is.null(partial)) {
-          print(X)
-          #X[[!(names(X) %in% partial)]] <- 0
-          #X[[!(names(X) %in% partial)]] <- 0
-        #}
         if (multimodal & !no_deep) {
           self$latest_test_data = list(structured = X, deep = X2, unstructured = data_unstruct)
         } else if (!multimodal & !no_deep) {
@@ -301,6 +296,7 @@ deeppamm <- R6::R6Class(
       data <- self$data
       t_ <- dim(data$structured[[1]][[1]])[2]
       structured <- structured_input <- vector("list", length(data[[1]])) 
+      all_subnetnames <- c()
       for (i in 1:length(structured)) {
         d_a <- deep_architectures
         d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, deparse(formulas[[i]]), fixed = T)]
@@ -312,6 +308,7 @@ deeppamm <- R6::R6Class(
           } else {
             lf <- lambdas[[subnetname]]
           }
+          all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
           structured_input[[i]][[j]] <- layer_input(c(t_, dim(data[[1]][[1]][[j]])[3]), name = paste0(subnetname, i, j), dtype = self$precision)
           if (dim(data[[1]][[1]][[j]])[3] > 1L) {
             lf[lf == 0] <- 1
@@ -364,7 +361,8 @@ deeppamm <- R6::R6Class(
             if (!(subnetname %in% names(d_a))) {
               break
             }
-            deep_input[[i]][[j]] <- layer_input(c(t_, dim(data[["deep"]][[i]][[j]])[3]), dtype = self$precision)
+            all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+            deep_input[[i]][[j]] <- layer_input(c(t_, dim(data[["deep"]][[i]][[j]])[3]), dtype = self$precision, name = paste0(subnetname, i, j))
             arch <- d_a[[subnetname]]
             deep[[i]][[j]] <- deep_input[[i]][[j]] %>% arch
             deep[[i]][[j]] <- deep[[i]][[j]] %>% layer_add()
@@ -389,7 +387,8 @@ deeppamm <- R6::R6Class(
           if (!(subnetname %in% names(d_a))) {
             break
           }
-          unstructured_input[[i]] <- layer_input(dim(data[["unstructured"]][[i]])[-1], dtype = self$precision)
+          all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+          unstructured_input[[i]] <- layer_input(dim(data[["unstructured"]][[i]])[-1], dtype = self$precision, name = paste0(subnetname, i, j))
           arch <- d_a[[subnetname]]
           unstructured[[i]] <- unstructured_input[[i]] %>% arch
           unstructured[[i]] <- unstructured[[i]] %>% 
@@ -410,8 +409,10 @@ deeppamm <- R6::R6Class(
         self$multimodal <- FALSE
       }
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
-      self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
+      XX <-lapply(smart_append(structured_data, deep_data, unstructured_data), 
                        tf$constant, dtype = self$precision)
+      names(XX) <- all_subnetnames
+      self$X <- XX
       output <- list(structured, deep, unstructured) 
       output <- output[!sapply(output, is.null)]
       output <- output %>% layer_add() %>% layer_activation("exponential") # fix
@@ -451,12 +452,18 @@ deeppamm <- R6::R6Class(
     #' @param verbose
     #' logical, verbosity passed to keras::predict
     predictHaz = function(new_data, full = TRUE, verbose = FALSE, time = "time") {
+      if (!is.null(partial)) full <- TRUE
       if (!is.data.frame(new_data) & is.list(new_data) & !self$multimodal) {
         new_data <- new_data[[1]]
       }
       if (is.data.frame(new_data)) {
         n <- nrow(new_data)
         maxt = max(new_data[[time]])
+        if (!is.null(partial)) {
+          range_partial <- c(min(new_data[[partial]], max(new_data[[partial]])))
+          new_data <- new_data[1, drop = FALSE]
+          new_data[, colnames(new_data) != ]
+        }
         if (self$scale) { 
           new_data <- scale_(self$scaler, new_data)
         }
