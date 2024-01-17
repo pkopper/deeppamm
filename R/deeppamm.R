@@ -452,18 +452,12 @@ deeppamm <- R6::R6Class(
     #' @param verbose
     #' logical, verbosity passed to keras::predict
     predictHaz = function(new_data, full = TRUE, verbose = FALSE, time = "time") {
-      if (!is.null(partial)) full <- TRUE
       if (!is.data.frame(new_data) & is.list(new_data) & !self$multimodal) {
         new_data <- new_data[[1]]
       }
       if (is.data.frame(new_data)) {
         n <- nrow(new_data)
         maxt = max(new_data[[time]])
-        if (!is.null(partial)) {
-          range_partial <- c(min(new_data[[partial]], max(new_data[[partial]])))
-          new_data <- new_data[1, drop = FALSE]
-          new_data[, colnames(new_data) != ]
-        }
         if (self$scale) { 
           new_data <- scale_(self$scaler, new_data)
         }
