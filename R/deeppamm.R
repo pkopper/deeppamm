@@ -212,7 +212,6 @@ deeppamm <- R6::R6Class(
           mm <- cbind(mm, offset = ped_data[[i]]$offset)
           mm2 <- model.matrix(pam2)
         } else {
-          print(ped_data[[i]])
           mm <- predict(self$related_pamm[[i]], ped_data[[i]], type = "lpmatrix")
           mm <- cbind(mm, offset = 0)
           mm2 <- predict(self$processing_pam, ped_data[[i]], type = "lpmatrix")
@@ -279,9 +278,11 @@ deeppamm <- R6::R6Class(
         self$processing_pam = pam2
       } else {
         no_deep <- !self$deep
-        if (!is.null(partial)) {
-          X[]
-        }
+        #if (!is.null(partial)) {
+          print(X)
+          #X[[!(names(X) %in% partial)]] <- 0
+          #X[[!(names(X) %in% partial)]] <- 0
+        #}
         if (multimodal & !no_deep) {
           self$latest_test_data = list(structured = X, deep = X2, unstructured = data_unstruct)
         } else if (!multimodal & !no_deep) {
