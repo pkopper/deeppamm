@@ -409,7 +409,6 @@ deeppamm <- R6::R6Class(
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
       self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
                        tf$constant, dtype = self$precision)
-      self$X_names <- a
       output <- list(structured, deep, unstructured) 
       output <- output[!sapply(output, is.null)]
       output <- output %>% layer_add() %>% layer_activation("exponential") # fix
