@@ -48,7 +48,7 @@ deeppamm <- R6::R6Class(
     deep = TRUE,
     built = FALSE,
     ped = FALSE,
-    subnets = NULL
+    subnets = NULL,
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
