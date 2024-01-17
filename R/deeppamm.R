@@ -258,8 +258,8 @@ deeppamm <- R6::R6Class(
           }
         }
       }
-      print(names(X))
-      print(names(X2))
+      print(names(X[[i]]))
+      print(names(X2[[i]]))
       X <- reshape(X, ped_data)
       X2 <- reshape(X2, ped_data)
       Y <- make_Y(ped_data)
