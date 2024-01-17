@@ -236,12 +236,23 @@ deeppamm <- R6::R6Class(
             if (partial_type == "covar") {
               mm <- mm[1:Nout, , drop = FALSE]
               mm[, colnames(mm) != covars] <- 0
-              range_ <- c(min(mm[, colnames(mm) == covars]),
-                          max(mm[, colnames(mm) == covars]))
-              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = length(cut))
-              self$partial_domain <- mm[, colnames(mm) == covars]
               mm2 <- mm2[1:Nout, , drop = FALSE]
               mm2[, colnames(mm2) != covars] <- 0
+              if (covars %in% colnames(mm)) {
+              range_ <- c(min(mm[, colnames(mm) == covars]),
+                          max(mm[, colnames(mm) == covars]))
+              } else if (covars %in% colnames(mm2)) { 
+                range_ <- c(min(mm2[, colnames(mm2) == covars]),
+                            max(mm2[, colnames(mm2) == covars]))
+              } else {
+                stop("Covariate does not exist in data.")
+              }
+              if (covars %in% colnames(mm)) {
+                self$partial_domain <- mm[, colnames(mm) == covars, drop = F]
+              } else {
+                self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
+              }
+              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = length(cut))
               mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = length(cut))
             } else {
               if (is_structured) {
