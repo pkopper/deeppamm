@@ -258,6 +258,8 @@ deeppamm <- R6::R6Class(
           }
         }
       }
+      print(names(X))
+      print(names(X2))
       X <- reshape(X, ped_data)
       X2 <- reshape(X2, ped_data)
       Y <- make_Y(ped_data)
@@ -407,6 +409,7 @@ deeppamm <- R6::R6Class(
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
       self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
                        tf$constant, dtype = self$precision)
+      self$X_names <- a
       output <- list(structured, deep, unstructured) 
       output <- output[!sapply(output, is.null)]
       output <- output %>% layer_add() %>% layer_activation("exponential") # fix
@@ -603,8 +606,8 @@ deeppamm <- R6::R6Class(
       }
       
       CIFs
-    }#, todo
-    #plot_partial = function(which) {
+    }, 
+    #plot_partial = function(which, structured_only = FALSE) {
     #    if (which == "time") {
     #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
     #    }
