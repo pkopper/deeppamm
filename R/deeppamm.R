@@ -48,6 +48,7 @@ deeppamm <- R6::R6Class(
     deep = TRUE,
     built = FALSE,
     ped = FALSE,
+    subnets = NULL
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -309,6 +310,7 @@ deeppamm <- R6::R6Class(
             lf <- lambdas[[subnetname]]
           }
           all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+          all_covars <- c(all_covars, names(data[[1]][[1]][[j]]))
           structured_input[[i]][[j]] <- layer_input(c(t_, dim(data[[1]][[1]][[j]])[3]), name = paste0(subnetname, i, j), dtype = self$precision)
           if (dim(data[[1]][[1]][[j]])[3] > 1L) {
             lf[lf == 0] <- 1
@@ -362,6 +364,7 @@ deeppamm <- R6::R6Class(
               break
             }
             all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+            all_covars <- c(all_covars, names(data[["deep"]][[i]][[j]]))
             deep_input[[i]][[j]] <- layer_input(c(t_, dim(data[["deep"]][[i]][[j]])[3]), dtype = self$precision, name = paste0(subnetname, i, j))
             arch <- d_a[[subnetname]]
             deep[[i]][[j]] <- deep_input[[i]][[j]] %>% arch
@@ -388,6 +391,7 @@ deeppamm <- R6::R6Class(
             break
           }
           all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+          all_covars <- c(all_covars, names(data[["unstructured"]][[i]]))
           unstructured_input[[i]] <- layer_input(dim(data[["unstructured"]][[i]])[-1], dtype = self$precision, name = paste0(subnetname, i, j))
           arch <- d_a[[subnetname]]
           unstructured[[i]] <- unstructured_input[[i]] %>% arch
@@ -416,6 +420,7 @@ deeppamm <- R6::R6Class(
       output <- list(structured, deep, unstructured) 
       output <- output[!sapply(output, is.null)]
       output <- output %>% layer_add() %>% layer_activation("exponential") # fix
+      self$subnets <- list(names = all_subnetnames, vars = all_covars)
       self$model <- keras_model(inputs, output)
       compile(self$model, loss = loss_poisson, optimizer = optimizer_adam(lr = self$lr), sample_weight_mode = "temporal", weighted_metrics = list())
       self$built <- TRUE
