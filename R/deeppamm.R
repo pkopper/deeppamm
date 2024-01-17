@@ -297,7 +297,7 @@ deeppamm <- R6::R6Class(
       data <- self$data
       t_ <- dim(data$structured[[1]][[1]])[2]
       structured <- structured_input <- vector("list", length(data[[1]])) 
-      all_subnetnames <- c()
+      all_subnetnames <- all_covars <- c()
       for (i in 1:length(structured)) {
         d_a <- deep_architectures
         d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, deparse(formulas[[i]]), fixed = T)]
