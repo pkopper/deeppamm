@@ -33,7 +33,6 @@ reshape <- function(X, ped) {
   for (i in 1:length(X)) {
     ids <- ped[[i]]$id
     res[[i]] <- vector("list", length(X[[i]]))
-    names(res[[i]]) <- names(X[[i]])
     for (j in 1:length(X[[i]])) {
       res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), length(unique(ped[[i]]$time)), ncol(X[[i]][[j]])))
       ped_ind <- 1
@@ -44,5 +43,6 @@ reshape <- function(X, ped) {
       }
     }
   }
+  names(res[[i]]) <- names(X[[i]])
   res
 }

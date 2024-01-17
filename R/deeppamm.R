@@ -262,6 +262,8 @@ deeppamm <- R6::R6Class(
       print(names(X2[[i]]))
       X <- reshape(X, ped_data)
       X2 <- reshape(X2, ped_data)
+      print(names(X[[i]]))
+      print(names(X2[[i]]))
       Y <- make_Y(ped_data)
       if (train) {
         weights <- reshape_weights(ped_data)
