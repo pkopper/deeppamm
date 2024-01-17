@@ -258,6 +258,8 @@ deeppamm <- R6::R6Class(
           }
         }
       }
+      print(names(X))
+      print(names(X2))
       X <- reshape(X, ped_data)
       X2 <- reshape(X2, ped_data)
       Y <- make_Y(ped_data)
@@ -603,8 +605,8 @@ deeppamm <- R6::R6Class(
       }
       
       CIFs
-    }#, todo
-    #plot_partial = function(which) {
+    }, 
+    #plot_partial = function(which, structured_only = FALSE) {
     #    if (which == "time") {
     #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
     #    }
