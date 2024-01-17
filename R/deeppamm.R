@@ -701,11 +701,7 @@ deeppamm <- R6::R6Class(
       if (is.null(partial_covar) & is.null(partial_effect)) {
         stop("You must supply either the covariable or effect you are interested in.")
       } 
-      if (!(is.list(new_data) & !is.data.frame(new_data))) {
-        new_data <- self$data
-      } else { 
-        stop("Not yet implemented but trivial")
-      }
+      new_data <- self$data
       hazards <- self$predictHaz(new_data, full = TRUE, verbose = FALSE,
                                  time = time, partial_covar = partial_covar, 
                                  partial_effect = partial_effect) 
