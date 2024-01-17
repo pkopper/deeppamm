@@ -526,7 +526,7 @@ deeppamm <- R6::R6Class(
     #' @param verbose
     #' logical, verbosity passed to keras::predict
     predictHaz = function(new_data, full = TRUE, verbose = FALSE, time = "time", partial_covar = NULL, partial_effect = NULL, Nout = 1000L) {
-      partial_ <- !is.null(partial_covar) | !is.null(partal_effect)
+      partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
       if ((!is.null(partial_covar)) & !(is.null(partial_effect))) {
         stop("You can either generate partial predictions covariate wise or effect wise. Not both at the same time.")
       }
