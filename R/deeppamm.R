@@ -369,7 +369,8 @@ deeppamm <- R6::R6Class(
       all_subnetnames <- all_covars <- c()
       for (i in 1:length(structured)) {
         d_a <- deep_architectures
-        d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, deparse(formulas[[i]]), fixed = T)]
+        d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, 
+                          paste(deparse(formulas[[i]]), collapse = ""), fixed = T)]
         structured[[i]] <- structured_input[[i]] <- vector("list", length(data[[1]][[i]]))
         for (j in 1:length(data[[1]][[i]])) {
           subnetname <- names(data[[1]][[i]])[[j]]
