@@ -174,3 +174,38 @@ select_single_obs <- function(x) {
   }
 }
 
+get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured) {
+  if (partial_type == "covar") {
+    return(partial)
+  } else {
+    if (is_structured) {
+      return(tabular_terms$structured[partial])
+    } else {
+      return(tabular_terms$unstructured[partial])
+    }
+  }
+}
+
+get_partial_type <- function(partial, tabular_terms) {
+  if (partial %in% names(tabular_terms$structured)) {
+    return(TRUE) 
+  } else if (partial %in% names(tabular_terms$deep)) {
+    return(FALSE)
+  } else {
+    stop("Effect does not exist.")
+  }
+}
+
+fill <- function(modelmatrix, covars, mins, maxs) {
+  lenghtout <- (nrow(modelmatrix))^(1/length(covars))
+  ll <- vector("list", length = length(covars)) 
+  names(ll) <- covars
+  for (i in 1:lenth(ll)) {
+    ll[[i]] <- seq(mins[i], maxs[i], length.out = lengthout)
+  }
+  partial_domain <- expand.grid(ll)
+  modelmatrix[, colnames(partial_domain)] <- partial_domain
+  modelmatrix[, !(colnames(modelmatrix) %in% colnames(partial_domain))] <- 0
+  list(modelmatrix = modelmatrix, partial_domain = partial_domain)
+}
+
