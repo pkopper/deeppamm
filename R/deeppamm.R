@@ -276,13 +276,14 @@ deeppamm <- R6::R6Class(
                 #mm2 <- mm2[1:nrow(mm), , drop = FALSE]
                 mm2 <- mm2 * 0
               } else {
-                mins <- sapply(mm2[, colnames(mm2) == covars], min)
-                maxs <- sapply(mm2[, colnames(mm2) == covars], max)
+                mins <- sapply(mm2[, colnames(mm2) == covars[[1]]], min)
+                maxs <- sapply(mm2[, colnames(mm2) == covars[[1]]], max)
                 if (length(covars) == 1L) {
                   #mm2 <- mm2[1:Nout, , drop = FALSE]
+                  mins <- min(mm2[, colnames(mm2) == covars[[1]]])
+                  maxs <- max(mm2[, colnames(mm2) == covars[[1]]])
                   mm2[, colnames(mm2) != covars] <- 0
                   mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
-                  print(c(mins, maxs))
                   self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
                 } else {
                   filled <- fill(mm2, covars, mins, maxs)
