@@ -251,13 +251,13 @@ deeppamm <- R6::R6Class(
               } else {
                 stop("Covariate does not exist in data.")
               }
+              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = Nout)
+              mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = Nout)
               if (covars %in% colnames(mm)) {
                 self$partial_domain <- mm[, colnames(mm) == covars, drop = F]
               } else {
                 self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
               }
-              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = Nout)
-              mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = Nout)
             } else {
               if (is_structured) {
                 mins <- sapply(mm[, colnames(mm) == covars], min)
@@ -266,12 +266,14 @@ deeppamm <- R6::R6Class(
                   #mm <- mm[1:Nout, , drop = FALSE]
                   mm[, colnames(mm) != covars] <- 0
                   mm[, colnames(mm) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
+                  self$partial_domain <- mm[, colnames(mm) == covars, drop = F]
                 } else {
                   filled <- fill(mm, covars, mins, maxs)
+                  mm <- filled$modelmatrix
                   self$partial_domain <- filled$partial_domain
                   self$Nout <- filled$lenght.out
                 }
-                mm2 <- mm2[1:nrow(mm), , drop = FALSE]
+                #mm2 <- mm2[1:nrow(mm), , drop = FALSE]
                 mm2 <- mm2 * 0
               } else {
                 mins <- sapply(mm2[, colnames(mm2) == covars], min)
@@ -282,9 +284,11 @@ deeppamm <- R6::R6Class(
                   mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
                 } else {
                   filled <- fill(mm2, covars, mins, maxs)
+                  mm <- filled$modelmatrix
                   self$partial_domain <- filled$partial_domain
+                  self$Nout <- filled$lenght.out
                 }
-                mm <- mm[1:nrow(mm2), , drop = FALSE]
+                #mm <- mm[1:nrow(mm2), , drop = FALSE]
                 mm <- mm * 0
               }
             }
