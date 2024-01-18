@@ -232,7 +232,7 @@ deeppamm <- R6::R6Class(
             partial_type <- ifelse(!is.null(partial_covar), "covar", "effect")
             is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
             covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
-            Nout <- round(min(Nout, nrow(mm))^(1/length(covars)))^length(covars)
+            Nout <- (Nout %/% length(cut)) * length(cut)
             self$Nout <- Nout
             if (partial_type == "covar") {
               mm <- mm[1:Nout, , drop = FALSE]
@@ -266,6 +266,7 @@ deeppamm <- R6::R6Class(
                 } else {
                   filled <- fill(mm, covars, mins, maxs)
                   self$partial_domain <- filled$partial_domain
+                  self$Nout <- filled$lenght.out
                 }
                 mm2 <- mm2[1:nrow(mm), , drop = FALSE]
                 mm2 <- mm2 * 0
