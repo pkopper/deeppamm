@@ -232,6 +232,7 @@ deeppamm <- R6::R6Class(
             ped_data[[i]] <- ped_data[[i]][1:Nout, ]
             is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
             covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
+            if (is.null(is_structured)) is_structured <- TRUE
             if (partial_type == "covar") {
               if (length(covars) != 1L) stop("Only one Covar at a time!")
               ped_data[[i]][, colnames(ped_data[[i]]) != covars] <- 0
