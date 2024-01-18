@@ -199,15 +199,22 @@ get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
 }
 
 fill <- function(modelmatrix, covars, mins, maxs) {
+  mm_length <- nrow(modelmatrix)
   lenghtout <- (nrow(modelmatrix))^(1/length(covars))
+  diff_length <- mm_length - lenghtout
   ll <- vector("list", length = length(covars)) 
   names(ll) <- covars
   for (i in 1:lenth(ll)) {
     ll[[i]] <- seq(mins[i], maxs[i], length.out = lengthout)
   }
   partial_domain <- expand.grid(ll)
+  if (diff_length >= 1) {
+    filler <- partial_domain[1:(1 + diff_length),]
+    filler <- filler * 0
+    partial_domain <- rbind(partial_domain, filler)
+  }
   modelmatrix[, colnames(partial_domain)] <- partial_domain
   modelmatrix[, !(colnames(modelmatrix) %in% colnames(partial_domain))] <- 0
-  list(modelmatrix = modelmatrix, partial_domain = partial_domain)
+  list(modelmatrix = modelmatrix, partial_domain = partial_domain, lenght.out = Nout)
 }
 
