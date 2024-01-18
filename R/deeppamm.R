@@ -282,6 +282,7 @@ deeppamm <- R6::R6Class(
                   #mm2 <- mm2[1:Nout, , drop = FALSE]
                   mm2[, colnames(mm2) != covars] <- 0
                   mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
+                  self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
                 } else {
                   filled <- fill(mm2, covars, mins, maxs)
                   mm <- filled$modelmatrix
