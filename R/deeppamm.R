@@ -225,7 +225,7 @@ deeppamm <- R6::R6Class(
           partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
           partial <- c(partial_covar, partial_effect)
           if (partial_) {
-            Nout <- min(Nout, nrow(mm))
+            Nout <- min(Nout, nrow(ped_data[[i]]))
             partial_type <- ifelse(!is.null(partial_covar), "covar", "effect")
             Nout <- (Nout %/% length(cut)) * length(cut)
             self$Nout <- Nout
