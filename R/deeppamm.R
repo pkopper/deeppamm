@@ -230,70 +230,36 @@ deeppamm <- R6::R6Class(
             Nout <- (Nout %/% length(cut)) * length(cut)
             self$Nout <- Nout
             ped_data[[i]] <- ped_data[[i]][1:Nout, ]
+            is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
+            covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
+            if (partial_type == "covar") {
+              if (length(covars) != 1L) stop("Only one Covar at a time!")
+              ped_data[[i]][, colnames(ped_data[[i]]) != covars] <- 0
+              min_ <- min(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+              max_ <- max(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+              ped_data[[i]][, colnames(ped_data[[i]]) == covars] <- 
+                seq(min_, max_, length.out = Nout)
+            } else {
+              mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
+              maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
+              ped_data[[i]][, colnames(ped_data[[i]]) != covars] <- 0
+              if (length(covars) == 1L) {
+                ped_data[[i]][, colnames(ped_data[[i]]) %in% covars] <- seq(mins[1], maxs[1], length.out = Nout)
+                self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = F] 
+              } else {
+                filled <- fill(ped_data[[i]], covars, mins, maxs)
+                ped_data <- filled$filled
+                self$partial_domain <- filled$partial_domain
+                self$Nout <- filled$length.out
+              }
+            }
           }
           mm <- predict(self$related_pamm[[i]], ped_data[[i]], type = "lpmatrix")
           mm <- cbind(mm, offset = 0)
           mm2 <- predict(self$processing_pam, ped_data[[i]], type = "lpmatrix")
           if (partial_) {
-            is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
-            covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
-            if (partial_type == "covar") {
-              #mm <- mm[1:Nout, , drop = FALSE]
-              mm[, colnames(mm) != covars] <- 0
-              #mm2 <- mm2[1:Nout, , drop = FALSE]
-              mm2[, colnames(mm2) != covars] <- 0
-              if (covars %in% colnames(mm)) {
-              range_ <- c(min(mm[, colnames(mm) == covars]),
-                          max(mm[, colnames(mm) == covars]))
-              } else if (covars %in% colnames(mm2)) { 
-                range_ <- c(min(mm2[, colnames(mm2) == covars]),
-                            max(mm2[, colnames(mm2) == covars]))
-              } else {
-                stop("Covariate does not exist in data.")
-              }
-              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = Nout)
-              mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = Nout)
-              if (covars %in% colnames(mm)) {
-                self$partial_domain <- mm[, colnames(mm) == covars, drop = F]
-              } else {
-                self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
-              }
-            } else {
-              if (is_structured) {
-                mins <- sapply(mm[, colnames(mm) == covars], min)
-                maxs <- sapply(mm[, colnames(mm) == covars], max)
-                if (length(covars) == 1L) {
-                  #mm <- mm[1:Nout, , drop = FALSE]
-                  mm[, colnames(mm) != covars] <- 0
-                  mm[, colnames(mm) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
-                  self$partial_domain <- mm[, colnames(mm) == covars, drop = F]
-                } else {
-                  filled <- fill(mm, covars, mins, maxs)
-                  mm <- filled$modelmatrix
-                  self$partial_domain <- filled$partial_domain
-                  self$Nout <- filled$lenght.out
-                }
-                #mm2 <- mm2[1:nrow(mm), , drop = FALSE]
-                mm2 <- mm2 * 0
-              } else {
-                mins <- sapply(mm2[, colnames(mm2) == covars[[1]]], min)
-                maxs <- sapply(mm2[, colnames(mm2) == covars[[1]]], max)
-                if (length(covars) == 1L) {
-                  #mm2 <- mm2[1:Nout, , drop = FALSE]
-                  mins <- min(mm2[, colnames(mm2) == covars[[1]]])
-                  maxs <- max(mm2[, colnames(mm2) == covars[[1]]])
-                  mm2[, colnames(mm2) != covars] <- 0
-                  mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
-                  self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
-                } else {
-                  filled <- fill(mm2, covars, mins, maxs)
-                  mm <- filled$modelmatrix
-                  self$partial_domain <- filled$partial_domain
-                  self$Nout <- filled$lenght.out
-                }
-                #mm <- mm[1:nrow(mm2), , drop = FALSE]
-                mm <- mm * 0
-              }
+            if (partial_type == "effect" & !is_structured) {
+              mm <- mm * 0
             }
           }
         }
@@ -513,7 +479,7 @@ deeppamm <- R6::R6Class(
       }
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
       XX <-lapply(smart_append(structured_data, deep_data, unstructured_data), 
-                       tf$constant, dtype = self$precision)
+                  tf$constant, dtype = self$precision)
       names(XX) <- all_subnetnames
       self$X <- XX
       output <- list(structured, deep, unstructured) 
