@@ -200,7 +200,7 @@ get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
 
 fill <- function(modelmatrix, covars, mins, maxs) {
   mm_length <- nrow(modelmatrix)
-  lenghtout <- (nrow(modelmatrix))^(1/length(covars))
+  lengthout <- (nrow(modelmatrix))^(1/length(covars))
   diff_length <- mm_length - lenghtout
   ll <- vector("list", length = length(covars)) 
   names(ll) <- covars
