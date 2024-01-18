@@ -253,8 +253,8 @@ deeppamm <- R6::R6Class(
               } else {
                 self$partial_domain <- mm2[, colnames(mm2) == covars, drop = F]
               }
-              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = length(cut))
-              mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = length(cut))
+              mm[, colnames(mm) == covars] <- seq(range_[1], range_[2], length.out = Nout)
+              mm2[, colnames(mm2) == covars] <- seq(range_[1], range_[2], length.out = Nout)
             } else {
               if (is_structured) {
                 mins <- sapply(mm[, colnames(mm) == covars], min)
@@ -262,7 +262,7 @@ deeppamm <- R6::R6Class(
                 if (length(covars) == 1L) {
                   mm <- mm[1:Nout, , drop = FALSE]
                   mm[, colnames(mm) != covars] <- 0
-                  mm[, colnames(mm) == covars] <- seq(mins[1], maxs[1], length.out = length(cut))
+                  mm[, colnames(mm) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
                 } else {
                   filled <- fill(mm, covars, mins, maxs)
                   self$partial_domain <- filled$partial_domain
@@ -275,7 +275,7 @@ deeppamm <- R6::R6Class(
                 if (length(covars) == 1L) {
                   mm2 <- mm2[1:Nout, , drop = FALSE]
                   mm2[, colnames(mm2) != covars] <- 0
-                  mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = length(cut))
+                  mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
                 } else {
                   filled <- fill(mm2, covars, mins, maxs)
                   self$partial_domain <- filled$partial_domain
