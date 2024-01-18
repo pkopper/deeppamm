@@ -240,6 +240,7 @@ deeppamm <- R6::R6Class(
               max_ <- max(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
               ped_data[[i]][, colnames(ped_data[[i]]) == covars] <- 
                 seq(min_, max_, length.out = Nout)
+              self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = FALSE] 
             } else {
               mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
               maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
