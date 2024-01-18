@@ -204,7 +204,7 @@ fill <- function(modelmatrix, covars, mins, maxs) {
   diff_length <- mm_length - lenghtout
   ll <- vector("list", length = length(covars)) 
   names(ll) <- covars
-  for (i in 1:lenth(ll)) {
+  for (i in 1:length(ll)) {
     ll[[i]] <- seq(mins[i], maxs[i], length.out = lengthout)
   }
   partial_domain <- expand.grid(ll)
