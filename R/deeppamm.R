@@ -341,7 +341,11 @@ deeppamm <- R6::R6Class(
           if (partial_) {
             if (partial_type == "effect") {
               if (!is_structured) {
-                X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] <- X2[[i]][!(names(X2[[i]]) %in% self$tabular_terms[[i]])] * 0
+                for (mi in 1:length(X2)) {
+                  if (names(X2)[[mi]] != partial) {
+                    X2[[i]][[mi]] <- X2[[i]][[mi]] * 0
+                  }
+                }
               }
             }
           }
