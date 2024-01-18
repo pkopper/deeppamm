@@ -224,20 +224,23 @@ deeppamm <- R6::R6Class(
         } else {
           partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
           partial <- c(partial_covar, partial_effect)
+          if (partial_) {
+            Nout <- min(Nout, nrow(mm))
+            partial_type <- ifelse(!is.null(partial_covar), "covar", "effect")
+            Nout <- (Nout %/% length(cut)) * length(cut)
+            self$Nout <- Nout
+            ped_data[[i]] <- ped_data[[i]][1:Nout, ]
+          }
           mm <- predict(self$related_pamm[[i]], ped_data[[i]], type = "lpmatrix")
           mm <- cbind(mm, offset = 0)
           mm2 <- predict(self$processing_pam, ped_data[[i]], type = "lpmatrix")
           if (partial_) {
-            Nout <- min(Nout, nrow(mm))
-            partial_type <- ifelse(!is.null(partial_covar), "covar", "effect")
             is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
             covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
-            Nout <- (Nout %/% length(cut)) * length(cut)
-            self$Nout <- Nout
             if (partial_type == "covar") {
-              mm <- mm[1:Nout, , drop = FALSE]
+              #mm <- mm[1:Nout, , drop = FALSE]
               mm[, colnames(mm) != covars] <- 0
-              mm2 <- mm2[1:Nout, , drop = FALSE]
+              #mm2 <- mm2[1:Nout, , drop = FALSE]
               mm2[, colnames(mm2) != covars] <- 0
               if (covars %in% colnames(mm)) {
               range_ <- c(min(mm[, colnames(mm) == covars]),
@@ -260,7 +263,7 @@ deeppamm <- R6::R6Class(
                 mins <- sapply(mm[, colnames(mm) == covars], min)
                 maxs <- sapply(mm[, colnames(mm) == covars], max)
                 if (length(covars) == 1L) {
-                  mm <- mm[1:Nout, , drop = FALSE]
+                  #mm <- mm[1:Nout, , drop = FALSE]
                   mm[, colnames(mm) != covars] <- 0
                   mm[, colnames(mm) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
                 } else {
@@ -274,7 +277,7 @@ deeppamm <- R6::R6Class(
                 mins <- sapply(mm2[, colnames(mm2) == covars], min)
                 maxs <- sapply(mm2[, colnames(mm2) == covars], max)
                 if (length(covars) == 1L) {
-                  mm2 <- mm2[1:Nout, , drop = FALSE]
+                  #mm2 <- mm2[1:Nout, , drop = FALSE]
                   mm2[, colnames(mm2) != covars] <- 0
                   mm2[, colnames(mm2) == covars] <- seq(mins[1], maxs[1], length.out = Nout)
                 } else {
