@@ -235,14 +235,14 @@ deeppamm <- R6::R6Class(
             if (is.null(is_structured)) is_structured <- TRUE
             if (partial_type == "covar") {
               if (length(covars) != 1L) stop("Only one Covar at a time!")
-              ped_data[[i]][, colnames(ped_data[[i]]) != covars] <- 0
+              ped_data[[i]][, !(colnames(ped_data[[i]]) %in% c(covars, "id"))] <- 0
               min_ <- min(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
               max_ <- max(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
               ped_data[[i]][, colnames(ped_data[[i]]) == covars] <- 
                 seq(min_, max_, length.out = Nout)
               self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = FALSE] 
             } else {
-              ped_data[[i]][, !(colnames(ped_data[[i]]) %in% covars)] <- 0
+              ped_data[[i]][, !(colnames(ped_data[[i]]) %in% c(covars, "id"))] <- 0
               if (length(covars) == 1L) {
                 mins <- min(ped_data[[i]][, colnames(ped_data[[i]] == covars)])
                 maxs <- max(ped_data[[i]][, colnames(ped_data[[i]] == covars)])
