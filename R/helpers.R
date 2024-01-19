@@ -215,7 +215,7 @@ fill <- function(x, covars, mins, maxs) {
   }
   x[, colnames(partial_domain)] <- partial_domain
   x[, !(colnames(x) %in% colnames(partial_domain))] <- 0
-  list(filled = x, partial_domain = partial_domain, length.out = Nout)
+  list(filled = x, partial_domain = partial_domain, length.out = lengthout)
 }
 
 get_structured_covars <- function(term, ped) {
