@@ -198,7 +198,8 @@ get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
   }
 }
 
-fill <- function (x, covars, mins, maxs) {
+fill <- function (x, covars, mins, maxs) 
+{
   mm_length <- nrow(x)
   lengthout <- (round((nrow(x))^(1/length(covars))))^length(covars)
   grid_length <- (lengthout)^(1/length(covars))
@@ -219,6 +220,16 @@ fill <- function (x, covars, mins, maxs) {
   list(filled = x, partial_domain = partial_domain, length.out = lengthout)
 }
 
+get_structured_covars <- function(term, ped) {
+  clmns <- colnames(ped)
+  res <- rep(FALSE, length(clmns))
+  for (i in 1:length(res)) {
+    if (grepl(clmns[i], term, fixed = TRUE)) {
+      res[i] <- TRUE
+    }
+  }
+  clmns[res]
+}
 
 
 
