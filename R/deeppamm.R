@@ -252,7 +252,7 @@ deeppamm <- R6::R6Class(
                 mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
                 maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
                 filled <- fill(ped_data[[i]], covars, mins, maxs)
-                ped_data <- filled$filled
+                ped_data[[i]] <- filled$filled
                 self$partial_domain <- filled$partial_domain
                 self$Nout <- filled$length.out
               }
