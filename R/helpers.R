@@ -198,18 +198,19 @@ get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
   }
 }
 
-fill <- function(x, covars, mins, maxs) {
+fill <- function (x, covars, mins, maxs) {
   mm_length <- nrow(x)
-  lengthout <- (nrow(x))^(1/length(covars))
+  lengthout <- (round((nrow(x))^(1/length(covars))))^length(covars)
+  grid_length <- (lengthout)^(1/length(covars))
   diff_length <- mm_length - lengthout
-  ll <- vector("list", length = length(covars)) 
+  ll <- vector("list", length = length(covars))
   names(ll) <- covars
   for (i in 1:length(ll)) {
-    ll[[i]] <- seq(mins[i], maxs[i], length.out = lengthout)
+    ll[[i]] <- seq(mins[i], maxs[i], length.out = grid_length)
   }
   partial_domain <- expand.grid(ll)
   if (diff_length >= 1) {
-    filler <- partial_domain[1:(1 + diff_length),]
+    filler <- partial_domain[1:(diff_length), ]
     filler <- filler * 0
     partial_domain <- rbind(partial_domain, filler)
   }
@@ -218,16 +219,6 @@ fill <- function(x, covars, mins, maxs) {
   list(filled = x, partial_domain = partial_domain, length.out = lengthout)
 }
 
-get_structured_covars <- function(term, ped) {
-  clmns <- colnames(ped)
-  res <- rep(FALSE, length(clmns))
-  for (i in 1:length(res)) {
-    if (grepl(clmns[i], term, fixed = TRUE)) {
-      res[i] <- TRUE
-    }
-  }
-  clmns[res]
-}
 
 
 
