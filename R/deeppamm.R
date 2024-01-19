@@ -242,13 +242,15 @@ deeppamm <- R6::R6Class(
                 seq(min_, max_, length.out = Nout)
               self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = FALSE] 
             } else {
-              mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
-              maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
               ped_data[[i]][, colnames(ped_data[[i]]) != covars] <- 0
-              if (length(covars) == 1L) {
+              if (length(covar) == 1L) {
+                mins <- min(ped_data[[i]][, colnames(ped_data[[i]] == covars)])
+                maxs <- min(ped_data[[i]][, colnames(ped_data[[i]] == covars)])
                 ped_data[[i]][, colnames(ped_data[[i]]) %in% covars] <- seq(mins[1], maxs[1], length.out = Nout)
-                self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = F] 
+                self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = F]
               } else {
+                mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
+                maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
                 filled <- fill(ped_data[[i]], covars, mins, maxs)
                 ped_data <- filled$filled
                 self$partial_domain <- filled$partial_domain
