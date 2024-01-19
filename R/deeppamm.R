@@ -306,7 +306,8 @@ deeppamm <- R6::R6Class(
             names(X2[[i]])[j] <- names(formulas[[i]]$deep_vars)[j]
           }
         }
-        tabular_terms[[i]] <- list(structured = processed_terms_t,
+        structured_covars <- lapply(names(processed_terms_t), get_structured_covars, ped = ped_data[[i]])
+        tabular_terms[[i]] <- list(structured = structured_covars,
                                    deep = formulas[[i]]$deep_vars)
         if (!train) {
           if (partial_) {
