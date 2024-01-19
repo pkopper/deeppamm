@@ -218,3 +218,19 @@ fill <- function(x, covars, mins, maxs) {
   list(filled = x, partial_domain = partial_domain, length.out = Nout)
 }
 
+get_structured_covars <- function(term, ped) {
+  clmns <- colnames(ped)
+  res <- rep(FALSE, length(clnms))
+  for (i in 1:length(res)) {
+    if (grepl(clmns[i], terms, fixed = TRUE)) {
+      res[i] <- TRUE
+    }
+  }
+  clmns[res]
+}
+
+
+
+
+                       
+
