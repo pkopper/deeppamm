@@ -309,6 +309,7 @@ deeppamm <- R6::R6Class(
           }
         }
         structured_covars <- lapply(names(processed_terms_t), get_structured_covars, ped = ped_data[[i]])
+        names(structured_covars) <- names(processed_terms_t)
         tabular_terms[[i]] <- list(structured = structured_covars,
                                    deep = formulas[[i]]$deep_vars)
         if (!train) {
