@@ -179,9 +179,9 @@ get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured
     return(partial)
   } else {
     if (is_structured) {
-      return(tabular_terms$structured[partial])
+      return(tabular_terms$structured[[partial]])
     } else {
-      return(tabular_terms$deep[partial])
+      return(tabular_terms$deep[[partial]])
     }
   }
 }
