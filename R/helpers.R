@@ -222,7 +222,7 @@ get_structured_covars <- function(term, ped) {
   clmns <- colnames(ped)
   res <- rep(FALSE, length(clmns))
   for (i in 1:length(res)) {
-    if (grepl(clmns[i], terms, fixed = TRUE)) {
+    if (grepl(clmns[i], term, fixed = TRUE)) {
       res[i] <- TRUE
     }
   }
