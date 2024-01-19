@@ -220,7 +220,7 @@ fill <- function(x, covars, mins, maxs) {
 
 get_structured_covars <- function(term, ped) {
   clmns <- colnames(ped)
-  res <- rep(FALSE, length(clnms))
+  res <- rep(FALSE, length(clmns))
   for (i in 1:length(res)) {
     if (grepl(clmns[i], terms, fixed = TRUE)) {
       res[i] <- TRUE
