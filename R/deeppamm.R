@@ -717,7 +717,7 @@ deeppamm <- R6::R6Class(
                                  self$partial_domain)
         }
       }
-      haz
+      haz[1:self$Nout, ]
     }
   )
 )
