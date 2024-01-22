@@ -326,8 +326,8 @@ deeppamm <- R6::R6Class(
           }
         }
       }
-      X <- reshape(X, ped_data)
-      X2 <- reshape(X2, ped_data)
+      X <- reshape(X, ped_data, cuts = self$cut)
+      X2 <- reshape(X2, ped_data, cuts = self$cut)
       Y <- make_Y(ped_data)
       if (train) {
         weights <- reshape_weights(ped_data)
