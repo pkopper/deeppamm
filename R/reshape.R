@@ -35,7 +35,7 @@ reshape <- function(X, ped, cuts = NULL) {
     ids <- ped[[i]]$id
     res[[i]] <- vector("list", length(X[[i]]))
     for (j in 1:length(X[[i]])) {
-      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), cuts, ncol(X[[i]][[j]])))
+      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), length(cuts), ncol(X[[i]][[j]])))
       ped_ind <- 1
       for (k in 1:nrow(res[[i]][[j]])) {
         current_len <- sum(k == ids)
