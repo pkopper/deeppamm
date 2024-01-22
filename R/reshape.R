@@ -28,13 +28,14 @@ make_Y <- function(ped) {
   res
 }
 
-reshape <- function(X, ped) {
+reshape <- function(X, ped, cuts = NULL) {
+  if (is.null(cuts)) cuts <- length(unique(ped[[i]]$time))
   res <- vector("list", length(X))
   for (i in 1:length(X)) {
     ids <- ped[[i]]$id
     res[[i]] <- vector("list", length(X[[i]]))
     for (j in 1:length(X[[i]])) {
-      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), length(unique(ped[[i]]$time)), ncol(X[[i]][[j]])))
+      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), cuts, ncol(X[[i]][[j]])))
       ped_ind <- 1
       for (k in 1:nrow(res[[i]][[j]])) {
         current_len <- sum(k == ids)
