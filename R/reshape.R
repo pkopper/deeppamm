@@ -12,8 +12,9 @@ reshape_weights <- function(ped) {
   res
 }
 
-make_Y <- function(ped) {
-  res <- array(0, dim = c(length(unique(ped[[1]]$id)), length(unique(ped[[1]]$time)), length(ped)))
+make_Y <- function(ped, cuts = NULL) {
+  if (is.null(cuts)) cuts <- length(unique(ped[[i]]$time))
+  res <- array(0, dim = c(length(unique(ped[[1]]$id)), length(cuts), length(ped)))
   for (k in 1:length(ped)) {
     ped_ <- ped[[k]]
     ids <- ped_$id
