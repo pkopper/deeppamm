@@ -216,7 +216,7 @@ fill <- function (x, covars, mins, maxs)
     partial_domain <- rbind(partial_domain, filler)
   }
   x[, colnames(partial_domain)] <- partial_domain
-  x[, !(colnames(x) %in% colnames(partial_domain))] <- 0
+  x[, !(colnames(x) %in% c(colnames(partial_domain), "id"))] <- 0
   list(filled = x, partial_domain = partial_domain, length.out = lengthout)
 }
 
