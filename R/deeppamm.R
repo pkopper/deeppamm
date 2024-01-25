@@ -714,8 +714,8 @@ deeppamm <- R6::R6Class(
         for (i in 1:ncol(pd)) {
           if (colnames(pd) != "time") {
             pd[, i] <- 
-              (pd[, i] * scaler$sds[[colnames(pd)[i]]]) +
-              scaler$means[[colnames(pd)[i]]]
+              (pd[, i] * self$scaler$sds[[colnames(pd)[i]]]) +
+              self$scaler$means[[colnames(pd)[i]]]
           }
         }
         self$partial_domain <- pd
