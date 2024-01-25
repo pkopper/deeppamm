@@ -709,6 +709,17 @@ deeppamm <- R6::R6Class(
       hazards <- self$predictHaz(new_data, full = TRUE, verbose = FALSE,
                                  time = time, partial_covar = partial_covar, 
                                  partial_effect = partial_effect) 
+      if (self$scale) {
+        pd <- self$partial_domain
+        for (i in 1:ncol(pd)) {
+          if (colnames(pd) != "time") {
+            pd[, i] <- 
+              (pd[, i] * scaler$sds[[colnames(pd)[i]]]) +
+              scaler$means[[colnames(pd)[i]]]
+          }
+        }
+        self$partial_domain <- pd
+      }
       if (!self$cr) {
         haz <- data.frame(haz = as.numeric(t(hazards[, , 1])),
                           self$partial_domain)
