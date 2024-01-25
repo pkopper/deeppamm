@@ -510,7 +510,7 @@ deeppamm <- R6::R6Class(
     #' callbacks passed down to keras::fit
     #' @param val_split 
     #' validation split used for training (early stopping)
-    train = function(epochs, batch_size, callbacks, val_split = 0.1) {
+    train = function(epochs, batch_size, callbacks = NULL, val_split = 0.1) {
       fit(self$model, x = self$X, y = self$Y,
           sample_weight = self$weights,
           epochs = epochs, batch_size = batch_size, 
