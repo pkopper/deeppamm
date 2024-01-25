@@ -262,6 +262,9 @@ deeppamm <- R6::R6Class(
           mm <- cbind(mm, offset = 0)
           mm2 <- predict(self$processing_pam, ped_data[[i]], type = "lpmatrix")
           if (partial_) {
+            if ("(Intercept)" %in% colnames(mm)) {
+              mm[, "(Intercept)"] <- 0
+            }
             if (partial_type == "effect" & !is_structured) {
               mm <- mm * 0
             }
