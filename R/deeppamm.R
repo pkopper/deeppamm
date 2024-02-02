@@ -511,8 +511,10 @@ deeppamm <- R6::R6Class(
     #' @param val_split 
     #' validation split used for training (early stopping)
     train = function(epochs, batch_size, callbacks = NULL, val_split = 0.1, verbose = TRUE) {
-      fit(self$model, x = self$X, y = self$Y,
-          sample_weight = self$weights,
+      X <- tf$constant(self$X)
+      y <- tf$constant(self$y)
+      wgs <- tf$constant(self$weights)
+      fit(self$model, x = X, y = y, sample_weight = wgs,
           epochs = epochs, batch_size = batch_size, 
           callbacks = callbacks,
           validation_split = val_split,
