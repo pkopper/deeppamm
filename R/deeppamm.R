@@ -38,6 +38,7 @@ deeppamm <- R6::R6Class(
     time = NULL,
     scale = TRUE,
     scaler = NULL,
+    scaled_data = NULL,
     related_pamm = NULL,
     pam_coeffs = NULL,
     processing_pam = NULL,
@@ -48,6 +49,11 @@ deeppamm <- R6::R6Class(
     deep = TRUE,
     built = FALSE,
     ped = FALSE,
+    subnets = NULL,
+    used_vars = NULL,
+    Nout = NULL,
+    tabular_terms = NULL,
+    partial_domain = NULL,
     #' @description
     #' Creates a new instance of this [R6][R6::R6Class] class.
     #'
@@ -130,6 +136,7 @@ deeppamm <- R6::R6Class(
         sds <- lapply(scale_data[, is_numeric, drop = FALSE], sd)
         self$scaler <- list(means = means, sds = sds)
         data_ = scale_(self$scaler, data_)
+        scaled_data <- self$scaled_data
       } 
       if (multimodal) {
         self$multimodal = TRUE
@@ -177,7 +184,9 @@ deeppamm <- R6::R6Class(
       }
     },
     #' @import dplyr
-    make_ped = function(data, formulas, trafo_fct, cut, cr, n_cr, multimodal, train = TRUE) {
+    make_ped = function(data, formulas, trafo_fct, cut, cr, n_cr, multimodal, 
+                        train = TRUE, partial_covar = NULL, partial_effect = NULL, 
+                        Nout = 1000L) {
       if (self$ped & train) stop("Train data already transformed to PED.")
       if (multimodal) {
         data_unstruct <- data[2:length(data)]
@@ -195,6 +204,7 @@ deeppamm <- R6::R6Class(
         self$formulas <- formulas
       }
       formulas <- decompose_formula(formulas, colnames(data))
+      tabular_terms <- vector("list", length(data_))
       for (i in 1:length(data_)) {
         data_[[i]] <- data %>% mutate(status = ifelse(status == crs[i], 1, 0)) %>%
           as.data.frame()
@@ -212,9 +222,53 @@ deeppamm <- R6::R6Class(
           mm <- cbind(mm, offset = ped_data[[i]]$offset)
           mm2 <- model.matrix(pam2)
         } else {
+          partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
+          partial <- c(partial_covar, partial_effect)
+          if (partial_) {
+            Nout <- min(Nout, nrow(ped_data[[i]]))
+            partial_type <- ifelse(!is.null(partial_covar), "covar", "effect")
+            Nout <- (Nout %/% length(cut)) * length(cut)
+            self$Nout <- Nout
+            ped_data[[i]] <- ped_data[[i]][1:Nout, ]
+            is_structured <- get_partial_type(partial, self$tabular_terms[[i]])
+            covars <- get_partial_vars(self$tabular_terms[[i]], partial, partial_type, is_structured)
+            if (is.null(is_structured)) is_structured <- TRUE
+            if (partial_type == "covar") {
+              if (length(covars) != 1L) stop("Only one Covar at a time!")
+              ped_data[[i]][, !(colnames(ped_data[[i]]) %in% c(covars, "id"))] <- 0
+              min_ <- min(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+              max_ <- max(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+              ped_data[[i]][, colnames(ped_data[[i]]) == covars] <- 
+                seq(min_, max_, length.out = Nout)
+              self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = FALSE] 
+            } else {
+              ped_data[[i]][, !(colnames(ped_data[[i]]) %in% c(covars, "id"))] <- 0
+              if (length(covars) == 1L) {
+                mins <- min(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+                maxs <- max(ped_data[[i]][, colnames(ped_data[[i]]) == covars])
+                ped_data[[i]][, colnames(ped_data[[i]]) %in% covars] <- seq(mins[1], maxs[1], length.out = Nout)
+                self$partial_domain <- ped_data[[i]][, colnames(ped_data[[i]]) == covars, drop = F]
+              } else {
+                mins <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], min)
+                maxs <- sapply(ped_data[[i]][, colnames(ped_data[[i]]) %in% covars], max)
+                filled <- fill(ped_data[[i]], covars, mins, maxs)
+                ped_data[[i]] <- filled$filled
+                self$partial_domain <- filled$partial_domain
+                self$Nout <- filled$length.out
+              }
+            }
+          }
           mm <- predict(self$related_pamm[[i]], ped_data[[i]], type = "lpmatrix")
           mm <- cbind(mm, offset = 0)
           mm2 <- predict(self$processing_pam, ped_data[[i]], type = "lpmatrix")
+          if (partial_) {
+            if ("(Intercept)" %in% colnames(mm)) {
+              mm[, "(Intercept)"] <- 0
+            }
+            if (partial_type == "effect" & !is_structured) {
+              mm <- mm * 0
+            }
+          }
         }
         processed_terms <- colnames(mm)[!colnames(mm) %in% c("(Intercept)", colnames(ped_data[[i]]))]
         unprocessed_terms <- c(colnames(ped_data[[i]])[colnames(ped_data[[i]]) %in% colnames(mm)], "(Intercept)")
@@ -238,8 +292,10 @@ deeppamm <- R6::R6Class(
         names(X[[i]]) <- c(unique(processed_terms_), unprocessed_terms)
         names(P[[i]]) <- unique(processed_terms_)
         for (j in 1:length(processed_terms_t)) {
-          X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
-          P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          if (length(processed_terms_t) > 0) {
+            X[[i]][[j]] <- mm[, processed_terms_t[[j]], drop = FALSE]
+            P[[i]][[j]] <- pam[[i]]$smooth[[j]]$S[[1]] * (pam[[i]]$sp[j] / nrow(ped_data[[i]]))
+          }
         }
         k = j
         for (j in 1:length(unprocessed_terms)) {
@@ -255,10 +311,27 @@ deeppamm <- R6::R6Class(
             names(X2[[i]])[j] <- names(formulas[[i]]$deep_vars)[j]
           }
         }
+        structured_covars <- lapply(names(processed_terms_t), get_structured_covars, ped = ped_data[[i]])
+        names(structured_covars) <- names(processed_terms_t)
+        tabular_terms[[i]] <- list(structured = structured_covars,
+                                   deep = formulas[[i]]$deep_vars)
+        if (!train) {
+          if (partial_) {
+            if (partial_type == "effect") {
+              if (!is_structured) {
+                for (mi in 1:length(X2)) {
+                  if (names(X2[[i]])[[mi]] != partial) {
+                    X2[[i]][[mi]] <- X2[[i]][[mi]] * 0
+                  }
+                }
+              }
+            }
+          }
+        }
       }
-      X <- reshape(X, ped_data)
-      X2 <- reshape(X2, ped_data)
-      Y <- make_Y(ped_data)
+      X <- reshape(X, ped_data, cuts = self$cut)
+      X2 <- reshape(X2, ped_data, cuts = self$cut)
+      Y <- make_Y(ped_data, cuts = self$cut)
       if (train) {
         weights <- reshape_weights(ped_data)
         if (multimodal & !no_deep) {
@@ -284,6 +357,9 @@ deeppamm <- R6::R6Class(
           self$latest_test_data = list(structured = X) 
         }
       }
+      if (train) {
+        self$tabular_terms <- tabular_terms
+      }
       self$ped <- TRUE
     },
     #' @import keras tensorflow dplyr
@@ -294,9 +370,11 @@ deeppamm <- R6::R6Class(
       data <- self$data
       t_ <- dim(data$structured[[1]][[1]])[2]
       structured <- structured_input <- vector("list", length(data[[1]])) 
+      all_subnetnames <- all_covars <- c()
       for (i in 1:length(structured)) {
         d_a <- deep_architectures
-        d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, deparse(formulas[[i]]), fixed = T)]
+        d_a <- d_a[sapply(paste0(names(d_a), stringr::fixed("(")), grepl, 
+                          paste(deparse(formulas[[i]]), collapse = ""), fixed = T)]
         structured[[i]] <- structured_input[[i]] <- vector("list", length(data[[1]][[i]]))
         for (j in 1:length(data[[1]][[i]])) {
           subnetname <- names(data[[1]][[i]])[[j]]
@@ -305,6 +383,8 @@ deeppamm <- R6::R6Class(
           } else {
             lf <- lambdas[[subnetname]]
           }
+          all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+          all_covars <- c(all_covars, names(data[[1]][[1]][[j]]))
           structured_input[[i]][[j]] <- layer_input(c(t_, dim(data[[1]][[1]][[j]])[3]), name = paste0(subnetname, i, j), dtype = self$precision)
           if (dim(data[[1]][[1]][[j]])[3] > 1L) {
             lf[lf == 0] <- 1
@@ -357,7 +437,9 @@ deeppamm <- R6::R6Class(
             if (!(subnetname %in% names(d_a))) {
               break
             }
-            deep_input[[i]][[j]] <- layer_input(c(t_, dim(data[["deep"]][[i]][[j]])[3]), dtype = self$precision)
+            all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+            all_covars <- c(all_covars, names(data[["deep"]][[i]][[j]]))
+            deep_input[[i]][[j]] <- layer_input(c(t_, dim(data[["deep"]][[i]][[j]])[3]), dtype = self$precision, name = paste0(subnetname, i, j))
             arch <- d_a[[subnetname]]
             deep[[i]][[j]] <- deep_input[[i]][[j]] %>% arch
             deep[[i]][[j]] <- deep[[i]][[j]] %>% layer_add()
@@ -382,7 +464,9 @@ deeppamm <- R6::R6Class(
           if (!(subnetname %in% names(d_a))) {
             break
           }
-          unstructured_input[[i]] <- layer_input(dim(data[["unstructured"]][[i]])[-1], dtype = self$precision)
+          all_subnetnames <- c(all_subnetnames, paste0(subnetname, i, j))
+          all_covars <- c(all_covars, names(data[["unstructured"]][[i]]))
+          unstructured_input[[i]] <- layer_input(dim(data[["unstructured"]][[i]])[-1], dtype = self$precision, name = paste0(subnetname, i, j))
           arch <- d_a[[subnetname]]
           unstructured[[i]] <- unstructured_input[[i]] %>% arch
           unstructured[[i]] <- unstructured[[i]] %>% 
@@ -403,11 +487,14 @@ deeppamm <- R6::R6Class(
         self$multimodal <- FALSE
       }
       inputs <- smart_append(unlist(structured_input), unlist(deep_input), unstructured_input)
-      self$X <- lapply(smart_append(structured_data, deep_data, unstructured_data), 
-                       tf$constant, dtype = self$precision)
+      XX <-lapply(smart_append(structured_data, deep_data, unstructured_data), 
+                  tf$constant, dtype = self$precision)
+      names(XX) <- all_subnetnames
+      self$X <- XX
       output <- list(structured, deep, unstructured) 
       output <- output[!sapply(output, is.null)]
       output <- output %>% layer_add() %>% layer_activation("exponential") # fix
+      self$subnets <- list(names = all_subnetnames, vars = all_covars)
       self$model <- keras_model(inputs, output)
       compile(self$model, loss = loss_poisson, optimizer = optimizer_adam(lr = self$lr), sample_weight_mode = "temporal", weighted_metrics = list())
       self$built <- TRUE
@@ -444,7 +531,11 @@ deeppamm <- R6::R6Class(
     #' logical, should the full follow up be predicted or only until event?
     #' @param verbose
     #' logical, verbosity passed to keras::predict
-    predictHaz = function(new_data, full = TRUE, verbose = FALSE, time = "time") {
+    predictHaz = function(new_data, full = TRUE, verbose = FALSE, time = "time", partial_covar = NULL, partial_effect = NULL, Nout = 1000L) {
+      partial_ <- !is.null(partial_covar) | !is.null(partial_effect)
+      if ((!is.null(partial_covar)) & !(is.null(partial_effect))) {
+        stop("You can either generate partial predictions covariate wise or effect wise. Not both at the same time.")
+      }
       if (!is.data.frame(new_data) & is.list(new_data) & !self$multimodal) {
         new_data <- new_data[[1]]
       }
@@ -461,7 +552,10 @@ deeppamm <- R6::R6Class(
         if (self$scale) new_data[[1]] <- scale_(self$scaler, new_data[[1]])
         if (full) new_data[[1]][[time]] <- rep(maxt, n)
       }
-      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
+      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, 
+                    self$n_cr, self$multimodal, train = FALSE, 
+                    partial_covar = partial_covar, 
+                    partial_effect = partial_effect)
       structured_data <- unname(data_unlist(self$latest_test_data[[1]]))
       dd <- self$latest_test_data[["deep"]]
       if (!is.null(dd)) {
@@ -472,6 +566,11 @@ deeppamm <- R6::R6Class(
       ud <- self$latest_test_data[["unstructured"]]
       if (!is.null(ud)) {
         unstructured_data <- unname(data_unlist(ud))
+        if (partial_) {
+          for (mi in 1:length(unstructured_data)) {
+            unstructured_data[[mi]] <- unstructured_data[[mi]] * 0
+          }
+        }
       } else {
         unstructured_data <- NULL
       }
@@ -534,7 +633,7 @@ deeppamm <- R6::R6Class(
         ungroup() %>%
         dplyr::filter(.data[["times"]] %in% env_times)
       stdhaz <- matrix(newdata$stdhaz, nrow = ni, 
-                     ncol = length(intervals), byrow = TRUE)
+                       ncol = length(intervals), byrow = TRUE)
       stdhaz
     },
     #' @description 
@@ -599,14 +698,41 @@ deeppamm <- R6::R6Class(
       lagged_os <- cbind(1, overall_survival[, 1:(ncol(overall_survival) - 1)])
       for (j in 1:self$n_cr) {
         CIFs[[j]] <- tf$cumsum(stdhaz[[j]] * lagged_os, axis = 1L)$numpy()
-        }
+      }
       
       CIFs
-    }#, todo
-    #plot_partial = function(which) {
-  #    if (which == "time") {
-  #      self$make_ped(new_data, self$formulas, self$trafo_fct, self$cut, self$cr, self$n_cr, self$multimodal, train = FALSE)
-  #    }
-  #  }
+    }, 
+    predict_partial = function(partial_covar = NULL, partial_effect = NULL, time = "time", Nout = 1000L) {
+      if (is.null(partial_covar) & is.null(partial_effect)) {
+        stop("You must supply either the covariable or effect you are interested in.")
+      } 
+      new_data <- self$raw_data
+      hazards <- self$predictHaz(new_data, full = TRUE, verbose = FALSE,
+                                 time = time, partial_covar = partial_covar, 
+                                 partial_effect = partial_effect) 
+      if (self$scale) {
+        pd <- self$partial_domain
+        for (i in 1:ncol(pd)) {
+          if (colnames(pd) != "time") {
+            pd[, i] <- 
+              (pd[, i] * self$scaler$sds[[colnames(pd)[i]]]) +
+              self$scaler$means[[colnames(pd)[i]]]
+          }
+        }
+        self$partial_domain <- pd
+      }
+      if (!self$cr) {
+        haz <- data.frame(haz = as.numeric(t(hazards[, , 1])),
+                          self$partial_domain)
+      }
+      else {
+        haz <- vector("list", length(dim(hazards)[3L]))
+        for (i in 1:length(haz)) {
+          haz[[i]] <- data.frame(haz = as.numeric(t(hazards[, , i])),
+                                 self$partial_domain)
+        }
+      }
+      haz[1:self$Nout, ]
+    }
   )
 )

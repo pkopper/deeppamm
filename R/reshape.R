@@ -12,8 +12,9 @@ reshape_weights <- function(ped) {
   res
 }
 
-make_Y <- function(ped) {
-  res <- array(0, dim = c(length(unique(ped[[1]]$id)), length(unique(ped[[1]]$time)), length(ped)))
+make_Y <- function(ped, cuts = NULL) {
+  if (is.null(cuts)) cuts <- length(unique(ped[[i]]$time))
+  res <- array(0, dim = c(length(unique(ped[[1]]$id)), length(cuts), length(ped)))
   for (k in 1:length(ped)) {
     ped_ <- ped[[k]]
     ids <- ped_$id
@@ -28,14 +29,14 @@ make_Y <- function(ped) {
   res
 }
 
-reshape <- function(X, ped) {
+reshape <- function(X, ped, cuts = NULL) {
+  if (is.null(cuts)) cuts <- length(unique(ped[[i]]$time))
   res <- vector("list", length(X))
   for (i in 1:length(X)) {
     ids <- ped[[i]]$id
     res[[i]] <- vector("list", length(X[[i]]))
-    names(res[[i]]) <- names(X[[i]])
     for (j in 1:length(X[[i]])) {
-      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), length(unique(ped[[i]]$time)), ncol(X[[i]][[j]])))
+      res[[i]][[j]] <- array(0, dim = c(length(unique(ped[[i]]$id)), length(cuts), ncol(X[[i]][[j]])))
       ped_ind <- 1
       for (k in 1:nrow(res[[i]][[j]])) {
         current_len <- sum(k == ids)
@@ -44,5 +45,6 @@ reshape <- function(X, ped) {
       }
     }
   }
+  names(res[[i]]) <- names(X[[i]])
   res
 }

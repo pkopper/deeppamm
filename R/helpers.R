@@ -8,9 +8,10 @@ decompose_formula <- function(formulas, colnamesX) {
     unbrack_terms <- terms[!str_detect(terms, stringr::fixed('('))]
     s_ <- brack_terms[str_detect(brack_terms, stringr::fixed('s('))]
     te_ <- brack_terms[str_detect(brack_terms, stringr::fixed('te('))]
-    structured <- c(s_, te_, unbrack_terms)
-    sformula <- as.formula(paste0("Y ~ ", paste(structured, collapse = "+")))
-    
+    structured <- c("1", s_, te_, unbrack_terms)
+    sform <- paste(structured, collapse = "+")
+    sform <- paste0("Y ~ ", sform)
+    sformula <- as.formula(sform)
     u <- terms[!(terms %in% structured)]
     re <- "\\(([^()]+)\\)"
     uu <- vector("list", length(u))
@@ -152,4 +153,86 @@ subset_mm <- function(data, frac = 0.8) {
   names(res) <- c("train", "test")
   res
 }
+
+select_single_obs <- function(x) {
+  if (dim(x) == 2) {
+    x[1, , drop = FALSE]
+  } else if (dim(x) == 3) {
+    x[1, , , drop = FALSE]
+  } else if (dim(x) == 4) {
+    x[1, , , , drop = FALSE]
+  } else if (dim(x) == 5) {
+    x[1, , , , , drop = FALSE]
+  } else if (dim(x) == 6) {
+    x[1, , , , , , drop = FALSE]
+  } else if (dim(x) == 7) {
+    x[1, , , , , , , drop = FALSE]
+  } else if (dim(x) == 8) {
+    x[1, , , , , , , , drop = FALSE]
+  } else {
+    stop("Not implemented for dim > 8 or dim < 2.")
+  }
+}
+
+get_partial_vars <- function(tabular_terms, partial, partial_type, is_structured = NULL) {
+  if (partial_type == "covar") {
+    return(partial)
+  } else {
+    if (is_structured) {
+      return(tabular_terms$structured[[partial]])
+    } else {
+      return(tabular_terms$deep[[partial]])
+    }
+  }
+}
+
+get_partial_type <- function(partial, tabular_terms, covar = TRUE) {
+  if (partial %in% names(tabular_terms$structured)) {
+    return(TRUE) 
+  } else if (partial %in% names(tabular_terms$deep)) {
+    return(FALSE)
+  } else if (!covar) {
+    stop("Effect does not exist.")
+  } else {
+    return(NULL)
+  }
+}
+
+fill <- function (x, covars, mins, maxs) 
+{
+  mm_length <- nrow(x)
+  lengthout <- (round((nrow(x))^(1/length(covars))))^length(covars)
+  grid_length <- (lengthout)^(1/length(covars))
+  diff_length <- mm_length - lengthout
+  ll <- vector("list", length = length(covars))
+  names(ll) <- covars
+  for (i in 1:length(ll)) {
+    ll[[i]] <- seq(mins[i], maxs[i], length.out = grid_length)
+  }
+  partial_domain <- expand.grid(ll)
+  if (diff_length >= 1) {
+    filler <- partial_domain[1:(diff_length), ]
+    filler <- filler * 0
+    partial_domain <- rbind(partial_domain, filler)
+  }
+  x[, colnames(partial_domain)] <- partial_domain
+  x[, !(colnames(x) %in% c(colnames(partial_domain), "id"))] <- 0
+  list(filled = x, partial_domain = partial_domain, length.out = lengthout)
+}
+
+get_structured_covars <- function(term, ped) {
+  clmns <- colnames(ped)
+  res <- rep(FALSE, length(clmns))
+  for (i in 1:length(res)) {
+    if (grepl(clmns[i], term, fixed = TRUE)) {
+      res[i] <- TRUE
+    }
+  }
+  clmns[res]
+}
+
+
+
+
+                       
 
